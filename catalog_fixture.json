@@ -5,7 +5,7 @@
     "fields": {
         "name": "Газонокосилка",
         "description": "Газонокосилка бенизновая блаблабла",
-        "image": "",
+        "photo": "",
         "category": "Техника для работы в саду",
         "price": 17000,
         "date_created": "2025-10-23",
@@ -18,7 +18,7 @@
     "fields": {
         "name": "Samsung Galaxy Mega Ultra Pro Super 999",
         "description": "Память - 512 гб, Оперативная память - 16 гб",
-        "image": "",
+        "photo": "",
         "category": "Смартфоны",
         "price": 55000,
         "date_created": "2025-10-13",

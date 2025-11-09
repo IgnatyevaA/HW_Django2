@@ -1,10 +1,19 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from .models import Product
 
 
 def home(request):
     """Контроллер для отображения главной страницы интернет-магазина"""
-    return render(request, 'catalog/home.html')
+    products = Product.objects.all()
+    context = {'products': products}
+    return render(request, 'catalog/home.html', context)
+
+
+def product_detail(request, pk):
+    """Контроллер для отображения страницы с подробной информацией о товаре"""
+    product = get_object_or_404(Product, pk=pk)
+    context = {'product': product}
+    return render(request, 'catalog/product_detail.html', context)
 
 
 def contacts(request):
@@ -19,13 +28,11 @@ def contacts(request):
         # или отправки email уведомления
         
         # Возвращаем сообщение об успешной отправке
-        return HttpResponse(f"""
-        <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-            <h2>Спасибо за обращение, {name}!</h2>
-            <p>Ваше сообщение успешно отправлено.</p>
-            <p>Мы свяжемся с вами по телефону {phone} в ближайшее время.</p>
-            <a href="/contacts/" style="color: #007bff;">Вернуться к контактам</a>
-        </div>
-        """)
+        context = {
+            'name': name,
+            'phone': phone,
+            'message': message
+        }
+        return render(request, 'catalog/contact_success.html', context)
     
     return render(request, 'catalog/contacts.html')

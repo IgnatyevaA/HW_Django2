@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Skystore{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">{{ product.name }}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.photo %}
+                <img src="{{ product.photo.url }}" alt="{{ product.name }}" class="img-fluid rounded mb-4">
+            {% else %}
+                <div class="bg-light rounded mb-4 d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <p class="text-muted">Изображение отсутствует</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <h2 class="card-title">{{ product.name }}</h2>
+                    <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
+                    <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
+                    <p class="card-text"><strong>Дата создания:</strong> {{ product.created_at|date:"d.m.Y" }}</p>
+                    <p class="card-text"><strong>Дата обновления:</strong> {{ product.updated_at|date:"d.m.Y" }}</p>
+                    <h4 class="mt-4">Описание:</h4>
+                    <p class="card-text">{{ product.description }}</p>
+                    <a href="{% url 'home' %}" class="btn btn-lg btn-block btn-outline-primary mt-3">Вернуться в каталог</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

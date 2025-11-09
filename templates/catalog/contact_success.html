@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Сообщение отправлено - Skystore{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">Спасибо за обращение!</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body text-center">
+                    <h2 class="card-title">Спасибо за обращение, {{ name }}!</h2>
+                    <p class="card-text">Ваше сообщение успешно отправлено.</p>
+                    <p class="card-text">Мы свяжемся с вами по телефону {{ phone }} в ближайшее время.</p>
+                    <a href="{% url 'contacts' %}" class="btn btn-lg btn-outline-primary mt-3">Вернуться к контактам</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

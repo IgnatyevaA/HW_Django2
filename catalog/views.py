@@ -1,24 +1,29 @@
-from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView, DetailView, View
+from django.shortcuts import render
 from .models import Product
 
 
-def home(request):
+class HomeView(ListView):
     """Контроллер для отображения главной страницы интернет-магазина"""
-    products = Product.objects.all()
-    context = {'products': products}
-    return render(request, 'catalog/home.html', context)
+    model = Product
+    template_name = 'catalog/home.html'
+    context_object_name = 'products'
 
 
-def product_detail(request, pk):
+class ProductDetailView(DetailView):
     """Контроллер для отображения страницы с подробной информацией о товаре"""
-    product = get_object_or_404(Product, pk=pk)
-    context = {'product': product}
-    return render(request, 'catalog/product_detail.html', context)
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
 
 
-def contacts(request):
+class ContactsView(View):
     """Контроллер для отображения страницы контактов и обработки формы обратной связи"""
-    if request.method == 'POST':
+    
+    def get(self, request):
+        return render(request, 'catalog/contacts.html')
+    
+    def post(self, request):
         # Получение данных из формы
         name = request.POST.get('name')
         phone = request.POST.get('phone')
@@ -34,5 +39,3 @@ def contacts(request):
             'message': message
         }
         return render(request, 'catalog/contact_success.html', context)
-    
-    return render(request, 'catalog/contacts.html')

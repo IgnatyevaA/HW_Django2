@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ blogpost.title }} - Skystore{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">{{ blogpost.title }}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4 box-shadow">
+                {% if blogpost.preview %}
+                    <img src="{{ blogpost.preview.url }}" alt="{{ blogpost.title }}" class="card-img-top" style="max-height: 400px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <p class="text-muted">
+                        Создано: {{ blogpost.created_at|date:"d.m.Y H:i" }} | 
+                        Просмотров: {{ blogpost.views_count }}
+                    </p>
+                    <div class="card-text">
+                        {{ blogpost.content|linebreaks }}
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-secondary">Редактировать</a>
+                        <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-danger">Удалить</a>
+                        <a href="{% url 'blog:blogpost_list' %}" class="btn btn-primary">Вернуться к списку</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

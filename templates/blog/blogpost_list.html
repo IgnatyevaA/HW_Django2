@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Блог - Skystore{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">Блог</h1>
+    <p class="lead">Читайте наши статьи и новости</p>
+{% endblock %}
+
+{% block content %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="{% url 'blog:blogpost_create' %}" class="btn btn-primary">Создать новую статью</a>
+        </div>
+    </div>
+    <div class="row">
+        {% for blogpost in blogposts %}
+            <div class="col-md-6 mb-4">
+                <div class="card box-shadow">
+                    {% if blogpost.preview %}
+                        <img src="{{ blogpost.preview.url }}" alt="{{ blogpost.title }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <p class="text-muted">Нет изображения</p>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ blogpost.title }}</h5>
+                        <p class="card-text">{{ blogpost.content|truncatewords:30 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Создано: {{ blogpost.created_at|date:"d.m.Y" }} | 
+                                Просмотров: {{ blogpost.views_count }}
+                            </small>
+                            <div>
+                                <a href="{% url 'blog:blogpost_detail' blogpost.pk %}" class="btn btn-sm btn-outline-primary">Читать</a>
+                                <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                                <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center">Статьи пока не опубликованы.</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+

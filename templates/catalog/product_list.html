@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Список продуктов - Skystore{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">Список продуктов</h1>
+    <p class="lead">Управление продуктами каталога</p>
+{% endblock %}
+
+{% block content %}
+    <div class="mb-3">
+        <a href="{% url 'product_create' %}" class="btn btn-primary">Добавить новый продукт</a>
+    </div>
+    
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if product.photo %}
+                        <img src="{{ product.photo.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <p class="text-muted">Нет изображения</p>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
+                        <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
+                        <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                            <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                            <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    Продукты пока не добавлены в каталог.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+

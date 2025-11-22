@@ -1,6 +1,9 @@
 from django.views.generic import ListView, DetailView, View
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from .models import Product
+from .forms import ProductForm
 
 
 class HomeView(ListView):
@@ -39,3 +42,34 @@ class ContactsView(View):
             'message': message
         }
         return render(request, 'catalog/contact_success.html', context)
+
+
+class ProductListView(ListView):
+    """Контроллер для отображения списка всех продуктов"""
+    model = Product
+    template_name = 'catalog/product_list.html'
+    context_object_name = 'products'
+
+
+class ProductCreateView(CreateView):
+    """Контроллер для создания нового продукта"""
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+    success_url = reverse_lazy('product_list')
+
+
+class ProductUpdateView(UpdateView):
+    """Контроллер для редактирования существующего продукта"""
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+    success_url = reverse_lazy('product_list')
+
+
+class ProductDeleteView(DeleteView):
+    """Контроллер для удаления продукта"""
+    model = Product
+    template_name = 'catalog/product_confirm_delete.html'
+    success_url = reverse_lazy('product_list')
+    context_object_name = 'product'

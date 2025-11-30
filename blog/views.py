@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from .models import BlogPost
+from .forms import BlogPostForm
 
 
 class BlogPostListView(ListView):
@@ -31,15 +32,19 @@ class BlogPostDetailView(DetailView):
 class BlogPostCreateView(CreateView):
     """Контроллер для создания новой блоговой записи"""
     model = BlogPost
-    fields = ['title', 'content', 'preview', 'is_published']
+    form_class = BlogPostForm
     template_name = 'blog/blogpost_form.html'
     success_url = reverse_lazy('blog:blogpost_list')
+    
+    def form_valid(self, form):
+        """Обработка успешной валидации формы"""
+        return super().form_valid(form)
 
 
 class BlogPostUpdateView(UpdateView):
     """Контроллер для обновления блоговой записи"""
     model = BlogPost
-    fields = ['title', 'content', 'preview', 'is_published']
+    form_class = BlogPostForm
     template_name = 'blog/blogpost_form.html'
 
     def get_success_url(self):

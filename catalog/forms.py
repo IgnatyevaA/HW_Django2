@@ -47,10 +47,22 @@ class ProductForm(forms.ModelForm):
             'class': 'form-control'
         })
         
-        # Стилизация поля category
+        # Стилизация поля category - убеждаемся, что queryset правильный
         self.fields['category'].widget.attrs.update({
             'class': 'form-select'
         })
+        # Убеждаемся, что queryset содержит все категории
+        from .models import Category
+        categories = Category.objects.all()
+        self.fields['category'].queryset = categories
+        # Если категорий нет, создаем категорию по умолчанию
+        if not categories.exists():
+            default_category = Category.objects.create(
+                name='Общая категория',
+                description='Категория по умолчанию'
+            )
+            self.fields['category'].queryset = Category.objects.all()
+            self.fields['category'].initial = default_category
         
         # Стилизация поля price
         self.fields['price'].widget.attrs.update({

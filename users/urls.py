@@ -7,3 +7,6 @@ urlpatterns = [
     path('logout/', UserLogoutView.as_view(), name='logout'),
 ]
 
+
+
+

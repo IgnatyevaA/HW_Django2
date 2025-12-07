@@ -8,9 +8,11 @@
 {% endblock %}
 
 {% block content %}
-    <div class="mb-3">
-        <a href="{% url 'product_create' %}" class="btn btn-primary">Добавить новый продукт</a>
-    </div>
+    {% if user.is_authenticated %}
+        <div class="mb-3">
+            <a href="{% url 'product_create' %}" class="btn btn-primary">Добавить новый продукт</a>
+        </div>
+    {% endif %}
     
     <div class="row">
         {% for product in products %}
@@ -27,13 +29,38 @@
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
                         <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
+                        <p class="card-text mb-1">
+                            <span class="badge {% if product.status == 'published' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ product.get_status_display }}
+                            </span>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Владелец:
+                                {% if product.owner %}
+                                    {{ product.owner.email }}
+                                {% else %}
+                                    Не указан
+                                {% endif %}
+                            </small>
+                        </p>
                         <p class="card-text">{{ product.description|truncatechars:100 }}</p>
                     </div>
                     <div class="card-footer">
-                        <div class="d-flex gap-2">
+                        <div class="d-flex flex-wrap gap-2">
                             <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
-                            <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
-                            <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            {% if user.is_authenticated and product.owner == user %}
+                                <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                            {% endif %}
+                            {% if user.is_authenticated and (product.owner == user or perms.catalog.delete_product) %}
+                                <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            {% endif %}
+                            {% if perms.catalog.can_unpublish_product and product.status == 'published' %}
+                                <form action="{% url 'product_unpublish' product.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-warning text-white">Снять с публикации</button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

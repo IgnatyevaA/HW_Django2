@@ -23,11 +23,39 @@
                     <h2 class="card-title">{{ product.name }}</h2>
                     <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
                     <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
+                    <p class="card-text">
+                        <strong>Статус:</strong>
+                        <span class="badge {% if product.status == 'published' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ product.get_status_display }}
+                        </span>
+                    </p>
+                    <p class="card-text">
+                        <strong>Владелец:</strong>
+                        {% if product.owner %}
+                            {{ product.owner.email }}
+                        {% else %}
+                            Не указан
+                        {% endif %}
+                    </p>
                     <p class="card-text"><strong>Дата создания:</strong> {{ product.created_at|date:"d.m.Y" }}</p>
                     <p class="card-text"><strong>Дата обновления:</strong> {{ product.updated_at|date:"d.m.Y" }}</p>
                     <h4 class="mt-4">Описание:</h4>
                     <p class="card-text">{{ product.description }}</p>
-                    <a href="{% url 'home' %}" class="btn btn-lg btn-block btn-outline-primary mt-3">Вернуться в каталог</a>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary">Вернуться в каталог</a>
+                        {% if user.is_authenticated and product.owner == user %}
+                            <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-secondary">Редактировать</a>
+                        {% endif %}
+                        {% if user.is_authenticated and (product.owner == user or perms.catalog.delete_product) %}
+                            <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">Удалить</a>
+                        {% endif %}
+                        {% if perms.catalog.can_unpublish_product and product.status == 'published' %}
+                            <form method="post" action="{% url 'product_unpublish' product.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning text-white">Снять с публикации</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

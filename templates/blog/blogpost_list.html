@@ -8,11 +8,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row mb-3">
-        <div class="col-12">
-            <a href="{% url 'blog:blogpost_create' %}" class="btn btn-primary">Создать новую статью</a>
+    {% if perms.blog.add_blogpost %}
+        <div class="row mb-3">
+            <div class="col-12">
+                <a href="{% url 'blog:blogpost_create' %}" class="btn btn-primary">Создать новую статью</a>
+            </div>
         </div>
-    </div>
+    {% endif %}
     <div class="row">
         {% for blogpost in blogposts %}
             <div class="col-md-6 mb-4">
@@ -32,10 +34,14 @@
                                 Создано: {{ blogpost.created_at|date:"d.m.Y" }} | 
                                 Просмотров: {{ blogpost.views_count }}
                             </small>
-                            <div>
+                            <div class="d-flex gap-2">
                                 <a href="{% url 'blog:blogpost_detail' blogpost.pk %}" class="btn btn-sm btn-outline-primary">Читать</a>
-                                <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
-                                <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                {% if perms.blog.change_blogpost %}
+                                    <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                                {% endif %}
+                                {% if perms.blog.delete_blogpost %}
+                                    <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

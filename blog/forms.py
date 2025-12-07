@@ -23,3 +23,6 @@ class BlogPostForm(forms.ModelForm):
         self.fields['preview'].widget.attrs.update({'class': 'form-control'})
         self.fields['is_published'].widget.attrs.update({'class': 'form-check-input'})
 
+
+
+

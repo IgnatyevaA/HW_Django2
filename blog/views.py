@@ -1,7 +1,19 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy, reverse
-from .models import BlogPost
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
 from .forms import BlogPostForm
+from .models import BlogPost
+
+
+class ContentManagerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Mixin that allows access only for content managers."""
+
+    raise_exception = True
+    group_name = "Контент-менеджер"
+
+    def test_func(self):
+        return self.request.user.groups.filter(name=self.group_name).exists()
 
 
 class BlogPostListView(ListView):
@@ -29,7 +41,7 @@ class BlogPostDetailView(DetailView):
         return obj
 
 
-class BlogPostCreateView(CreateView):
+class BlogPostCreateView(ContentManagerRequiredMixin, CreateView):
     """Контроллер для создания новой блоговой записи"""
     model = BlogPost
     form_class = BlogPostForm
@@ -41,7 +53,7 @@ class BlogPostCreateView(CreateView):
         return super().form_valid(form)
 
 
-class BlogPostUpdateView(UpdateView):
+class BlogPostUpdateView(ContentManagerRequiredMixin, UpdateView):
     """Контроллер для обновления блоговой записи"""
     model = BlogPost
     form_class = BlogPostForm
@@ -52,7 +64,7 @@ class BlogPostUpdateView(UpdateView):
         return reverse('blog:blogpost_detail', kwargs={'pk': self.object.pk})
 
 
-class BlogPostDeleteView(DeleteView):
+class BlogPostDeleteView(ContentManagerRequiredMixin, DeleteView):
     """Контроллер для удаления блоговой записи"""
     model = BlogPost
     template_name = 'blog/blogpost_confirm_delete.html'

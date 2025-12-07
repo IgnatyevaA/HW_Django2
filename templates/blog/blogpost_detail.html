@@ -21,10 +21,14 @@
                     <div class="card-text">
                         {{ blogpost.content|linebreaks }}
                     </div>
-                    <div class="mt-4">
-                        <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-secondary">Редактировать</a>
-                        <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-danger">Удалить</a>
+                    <div class="mt-4 d-flex flex-wrap gap-2">
                         <a href="{% url 'blog:blogpost_list' %}" class="btn btn-primary">Вернуться к списку</a>
+                        {% if perms.blog.change_blogpost %}
+                            <a href="{% url 'blog:blogpost_edit' blogpost.pk %}" class="btn btn-secondary">Редактировать</a>
+                        {% endif %}
+                        {% if perms.blog.delete_blogpost %}
+                            <a href="{% url 'blog:blogpost_delete' blogpost.pk %}" class="btn btn-danger">Удалить</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

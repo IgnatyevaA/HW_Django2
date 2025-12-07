@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load custom_tags %}
 
 {% block title %}Список продуктов - Skystore{% endblock %}
 
@@ -27,7 +28,7 @@
                     {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
+                        <p class="card-text"><strong>Категория:</strong> {% if product.category %}{{ product.category.name }}{% else %}Не указана{% endif %}</p>
                         <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
                         <p class="card-text mb-1">
                             <span class="badge {% if product.status == 'published' %}bg-success{% else %}bg-secondary{% endif %}">
@@ -52,8 +53,10 @@
                             {% if user.is_authenticated and product.owner == user %}
                                 <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
                             {% endif %}
-                            {% if user.is_authenticated and (product.owner == user or perms.catalog.delete_product) %}
-                                <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            {% if user.is_authenticated %}
+                                {% if product.owner == user or user|is_product_moderator %}
+                                    <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                {% endif %}
                             {% endif %}
                             {% if perms.catalog.can_unpublish_product and product.status == 'published' %}
                                 <form action="{% url 'product_unpublish' product.pk %}" method="post">

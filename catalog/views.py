@@ -40,7 +40,11 @@ class OwnerOrModeratorMixin:
 
     def dispatch(self, request, *args, **kwargs):
         product = self.get_object()
-        if product.owner != request.user and not self.has_moderator_rights(request.user):
+        # Если у продукта нет владельца, разрешаем удаление только модераторам
+        if product.owner is None:
+            if not self.has_moderator_rights(request.user):
+                raise PermissionDenied("Недостаточно прав для удаления продукта.")
+        elif product.owner != request.user and not self.has_moderator_rights(request.user):
             raise PermissionDenied("Недостаточно прав для удаления продукта.")
         return super().dispatch(request, *args, **kwargs)
 
@@ -93,11 +97,12 @@ class ProductListView(ListView):
     context_object_name = 'products'
 
     def get_queryset(self):
-        queryset = Product.objects.filter(status=Product.Status.PUBLISHED)
         if self.request.user.is_authenticated:
             queryset = Product.objects.filter(
                 Q(status=Product.Status.PUBLISHED) | Q(owner=self.request.user)
             ).distinct()
+        else:
+            queryset = Product.objects.filter(status=Product.Status.PUBLISHED)
         return queryset
 
 

@@ -2,15 +2,20 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
 )
+from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from .forms import ProductForm
-from .models import Product
+from .models import Category, Product
+from .services import get_products_by_category
 
 
 class OwnerRequiredMixin:
@@ -65,6 +70,17 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    def dispatch(self, request, *args, **kwargs):
+        ttl = getattr(settings, "CACHE_TTL", 60 * 15)
+        if settings.CACHE_ENABLED:
+            try:
+                cached_view = vary_on_cookie(cache_page(ttl)(super().dispatch))
+                return cached_view(request, *args, **kwargs)
+            except Exception:
+                # При недоступности Redis просто отдаем страницу без кеша
+                pass
+        return super().dispatch(request, *args, **kwargs)
+
 
 class ContactsView(View):
     """Контроллер для отображения страницы контактов и обработки формы обратной связи"""
@@ -95,15 +111,38 @@ class ProductListView(ListView):
     model = Product
     template_name = 'catalog/product_list.html'
     context_object_name = 'products'
+    cache_prefix = "product_list"
+    cache_timeout = getattr(settings, "CACHE_TTL", 60 * 15)
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
+        user = self.request.user
+        cache_key = (
+            f"{self.cache_prefix}_{user.id}" if user.is_authenticated else f"{self.cache_prefix}_anon"
+        )
+
+        if settings.CACHE_ENABLED:
+            try:
+                cached_products = cache.get(cache_key)
+                if cached_products is not None:
+                    return cached_products
+            except Exception:
+                # Если кеш недоступен, продолжаем без него
+                cached_products = None
+
+        if user.is_authenticated:
             queryset = Product.objects.filter(
-                Q(status=Product.Status.PUBLISHED) | Q(owner=self.request.user)
-            ).distinct()
+                Q(status=Product.Status.PUBLISHED) | Q(owner=user)
+            ).select_related("category", "owner").distinct()
         else:
-            queryset = Product.objects.filter(status=Product.Status.PUBLISHED)
-        return queryset
+            queryset = Product.objects.filter(status=Product.Status.PUBLISHED).select_related("category", "owner")
+
+        products = list(queryset)
+        if settings.CACHE_ENABLED:
+            try:
+                cache.set(cache_key, products, self.cache_timeout)
+            except Exception:
+                pass
+        return products
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -145,3 +184,27 @@ class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, View):
         product.status = Product.Status.DRAFT
         product.save(update_fields=['status'])
         return redirect('product_detail', pk=product.pk)
+
+
+class CategoryProductsView(ListView):
+    """Отображение продуктов выбранной категории"""
+
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.category = get_object_or_404(Category, pk=kwargs.get('pk'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return list(
+            get_products_by_category(
+                category_id=self.category.pk,
+                user=self.request.user,
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context

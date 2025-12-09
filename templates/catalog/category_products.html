@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block title %}{{ category.name }} - продукты{% endblock %}
+
+{% block header %}
+    <h1 class="display-4">Категория: {{ category.name }}</h1>
+    {% if category.description %}
+        <p class="lead">{{ category.description }}</p>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="mb-3">
+        <a href="{% url 'product_list' %}" class="btn btn-outline-primary">Все продукты</a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Каталог</a>
+    </div>
+
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if product.photo %}
+                        <img src="{{ product.photo.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <p class="text-muted">Нет изображения</p>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text"><strong>Цена:</strong> ₽ {{ product.price }}</p>
+                        <p class="card-text mb-1">
+                            <span class="badge {% if product.status == 'published' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ product.get_status_display }}
+                            </span>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Владелец:
+                                {% if product.owner %}
+                                    {{ product.owner.email }}
+                                {% else %}
+                                    Не указан
+                                {% endif %}
+                            </small>
+                        </p>
+                        <p class="card-text">{{ product.description|truncatechars:120 }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                            {% if user.is_authenticated and product.owner == user %}
+                                <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                                {% if product.owner == user or user|is_product_moderator %}
+                                    <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    В этой категории пока нет продуктов.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
